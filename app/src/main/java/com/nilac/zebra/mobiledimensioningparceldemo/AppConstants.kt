@@ -7,6 +7,9 @@ object AppConstants {
 
     const val ZEBRA_DIMENSIONING_PACKAGE = "com.zebra.dimensioning"
 
+    const val DW_SCANNER_INTENT_ACTION = "com.nilac.zebra.mobiledimensioningparceldemo.SCANNER"
+    const val DW_DATA_STRING_TAG = "com.symbol.datawedge.data_string"
+
     const val APPLICATION_PACKAGE = "APPLICATION_PACKAGE"
 
     const val MODULE = "MODULE"

@@ -4,6 +4,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
+import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Bundle
 import android.text.Spannable
@@ -12,16 +13,28 @@ import android.text.style.TextAppearanceSpan
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import com.nilac.zebra.mobiledimensioningparceldemo.AppConstants
 import com.nilac.zebra.mobiledimensioningparceldemo.R
 import com.nilac.zebra.mobiledimensioningparceldemo.databinding.ActivityMainBinding
+import com.nilac.zebra.mobiledimensioningparceldemo.utils.DWUtil
 import com.nilac.zebra.mobiledimensioningparceldemo.utils.DimensioningUtils
+import com.zebra.nilac.dwconfigurator.Constants
+import com.zebra.nilac.dwconfigurator.DataWedgeWrapper
+import com.zebra.nilac.dwconfigurator.interfaces.OnScanIntentListener
 import java.math.BigDecimal
 import java.time.Instant
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), OnScanIntentListener {
+
+    private val dateFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy")
+    private val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
 
     private lateinit var binding: ActivityMainBinding
+
+    private lateinit var originalStrokeColorStateList: ColorStateList
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,7 +46,28 @@ class MainActivity : AppCompatActivity() {
         //Start Dimension Service
         startDimensionService()
 
+        //Check DW Profile
+        DataWedgeWrapper.sendIntent(
+            this,
+            Constants.IntentType.SET_CONFIG,
+            DWUtil.generateDWProfileIntent(this)
+        )
+
         prepareUI()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        DataWedgeWrapper.registerScanReceiver(
+            this,
+            AppConstants.DW_SCANNER_INTENT_ACTION,
+            this
+        )
+    }
+
+    override fun onPause() {
+        super.onPause()
+        DataWedgeWrapper.unregisterScanReceiver(this)
     }
 
     override fun onDestroy() {
@@ -133,10 +167,59 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onScanEvent(intent: Intent) {
+        Log.d(TAG, "Received a DataWedge scanner intent: $intent")
+        val decodedBarcode = intent.getStringExtra(AppConstants.DW_DATA_STRING_TAG)!!
+
+        binding.parcelIdInput.setText(decodedBarcode)
+
+        LocalDateTime.now().let {
+            binding.parcelDateInput.setText(it.format(dateFormatter))
+            binding.parcelTimeInput.setText(it.format(timeFormatter))
+        }
+
+        clearMeasurements()
+    }
+
     private fun prepareUI() {
         binding.getDimensionsButton.setOnClickListener {
             startDimensioning()
         }
+
+        originalStrokeColorStateList = ColorStateList(
+            arrayOf(
+                intArrayOf(android.R.attr.state_focused),
+                intArrayOf(android.R.attr.state_enabled),
+                intArrayOf()
+            ),
+            intArrayOf(
+                Color.GRAY,
+                Color.GRAY,
+                Color.GRAY
+            )
+        )
+    }
+
+    private fun clearMeasurements() {
+        binding.parcelWidthInputLayout.apply {
+            setBoxStrokeColorStateList(originalStrokeColorStateList)
+            hintTextColor = originalStrokeColorStateList
+        }
+        binding.parcelWidthInput.setText("")
+
+        binding.parcelLengthInputLayout.apply {
+            setBoxStrokeColorStateList(originalStrokeColorStateList)
+            hintTextColor = originalStrokeColorStateList
+        }
+        binding.parcelLengthInput.setText("")
+
+        binding.parcelHeightInputLayout.apply {
+            setBoxStrokeColorStateList(originalStrokeColorStateList)
+            hintTextColor = originalStrokeColorStateList
+        }
+        binding.parcelHeightInput.setText("")
+
+        binding.parcelWeightInput.setText("")
     }
 
     private fun startDimensioning() {
