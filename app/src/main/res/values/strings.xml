@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Mobile Dimensioning Parcel Demo</string>
+    <string name="app_name">MD Parcel Demo</string>
 
     <string name="parcel_info_title">Parcel Info</string>
     <string name="parcel_retrieved_measurements_title">Measurements</string>
