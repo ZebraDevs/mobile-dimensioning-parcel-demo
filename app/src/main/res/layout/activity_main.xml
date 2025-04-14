@@ -189,6 +189,7 @@
                 android:layout_gravity="center"
                 android:layout_marginTop="@dimen/def_quad_margin"
                 android:gravity="center"
+                android:clickable="true"
                 android:text="@string/get_dimensions_button_title"
                 app:icon="@drawable/ic_dimen_scan_generic"
                 app:iconPadding="-10dp"

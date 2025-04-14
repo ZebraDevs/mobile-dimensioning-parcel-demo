@@ -9,6 +9,10 @@
     <string name="dimensioning_date_hint">Date</string>
     <string name="dimensioning_time_hint">Time</string>
 
+    <string name="generic_height_measurement">Height: %s cm</string>
+    <string name="generic_length_measurement">Length: %s cm</string>
+    <string name="generic_width_measurement">Width: %s cm</string>
+
     <string name="dimensioning_size_hint">Size</string>
     <string name="parcel_length_hint">Length</string>
     <string name="parcel_width_hint">Width</string>
