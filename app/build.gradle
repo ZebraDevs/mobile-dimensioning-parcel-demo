@@ -43,9 +43,17 @@ dependencies {
     implementation libs.androidx.core.ktx
     implementation libs.androidx.appcompat
     implementation libs.material
+    implementation libs.androidx.navigation.ui.ktx
+
+    implementation libs.lifecycle.livedata.ktx
+    implementation libs.lifecycle.runtime.ktx
 
     //DataWedge Configurator
     implementation libs.dwconfigurator
+
+    //EMDK
+    implementation libs.emdk
+    implementation libs.emdk.loader
 
     testImplementation libs.junit
     androidTestImplementation libs.androidx.junit

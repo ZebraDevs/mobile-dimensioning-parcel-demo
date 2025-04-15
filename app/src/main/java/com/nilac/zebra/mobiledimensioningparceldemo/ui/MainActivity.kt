@@ -6,17 +6,22 @@ import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.Typeface
+import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.TextAppearanceSpan
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Observer
 import com.nilac.zebra.mobiledimensioningparceldemo.AppConstants
 import com.nilac.zebra.mobiledimensioningparceldemo.R
 import com.nilac.zebra.mobiledimensioningparceldemo.databinding.ActivityMainBinding
+import com.nilac.zebra.mobiledimensioningparceldemo.models.Event
 import com.nilac.zebra.mobiledimensioningparceldemo.utils.DWUtil
 import com.nilac.zebra.mobiledimensioningparceldemo.utils.DimensioningUtils
 import com.zebra.nilac.dwconfigurator.Constants
@@ -33,6 +38,7 @@ class MainActivity : AppCompatActivity(), OnScanIntentListener {
     private val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
 
     private lateinit var binding: ActivityMainBinding
+    private val mainViewModel: MainViewModel by viewModels()
 
     private lateinit var originalStrokeColorStateList: ColorStateList
 
@@ -53,6 +59,17 @@ class MainActivity : AppCompatActivity(), OnScanIntentListener {
             DWUtil.generateDWProfileIntent(this)
         )
 
+        mainViewModel.manageExternalStorageResult.observe(this) {
+            val result = it.contentIfNotHandled ?: return@observe
+            runOnUiThread {
+                Toast.makeText(
+                    this,
+                    if (result) "Manage External Storage Successfully Granted" else "Failed To Grant Manage External Storage Permission",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+
         prepareUI()
     }
 
@@ -71,8 +88,10 @@ class MainActivity : AppCompatActivity(), OnScanIntentListener {
     }
 
     override fun onDestroy() {
-        stopDimensioningService()
         super.onDestroy()
+        stopDimensioningService()
+
+        mainViewModel.manageExternalStorageResult.removeObservers(this)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
@@ -198,6 +217,12 @@ class MainActivity : AppCompatActivity(), OnScanIntentListener {
                 Color.GRAY
             )
         )
+
+        //Check Manage External Storage Permission and apply it
+        if (!Environment.isExternalStorageManager()) {
+            mainViewModel.preGrantManageExternalStoragePermission()
+            return
+        }
     }
 
     private fun clearMeasurements() {
