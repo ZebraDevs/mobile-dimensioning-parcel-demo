@@ -10,6 +10,11 @@ object AppConstants {
     const val DW_SCANNER_INTENT_ACTION = "com.nilac.zebra.mobiledimensioningparceldemo.SCANNER"
     const val DW_DATA_STRING_TAG = "com.symbol.datawedge.data_string"
 
+    private const val FOLDER_NAME = "md-dimensioning-demo"
+
+    const val PARCELS_FILE_NAME = "parcels_list.csv"
+    val PARCELS_FOLDER_PATH = Environment.getExternalStorageDirectory().absolutePath + "/$FOLDER_NAME"
+
     const val APPLICATION_PACKAGE = "APPLICATION_PACKAGE"
 
     const val MODULE = "MODULE"

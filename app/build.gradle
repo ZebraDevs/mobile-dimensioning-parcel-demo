@@ -55,6 +55,9 @@ dependencies {
     implementation libs.emdk
     implementation libs.emdk.loader
 
+    //OpenCSV
+    implementation libs.opencsv
+
     testImplementation libs.junit
     androidTestImplementation libs.androidx.junit
     androidTestImplementation libs.androidx.espresso.core

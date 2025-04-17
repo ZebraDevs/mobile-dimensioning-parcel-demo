@@ -26,6 +26,7 @@ import com.nilac.zebra.mobiledimensioningparceldemo.AppConstants
 import com.nilac.zebra.mobiledimensioningparceldemo.R
 import com.nilac.zebra.mobiledimensioningparceldemo.databinding.ActivityMainBinding
 import com.nilac.zebra.mobiledimensioningparceldemo.models.Event
+import com.nilac.zebra.mobiledimensioningparceldemo.utils.CSVUtil
 import com.nilac.zebra.mobiledimensioningparceldemo.utils.DWUtil
 import com.nilac.zebra.mobiledimensioningparceldemo.utils.DimensioningUtils
 import com.zebra.nilac.dwconfigurator.Constants
@@ -36,7 +37,7 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-class MainActivity : AppCompatActivity(), OnScanIntentListener {
+class MainActivity : AppCompatActivity(), OnScanIntentListener, CSVUtil.WritingStatus {
 
     private val dateFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy")
     private val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
@@ -204,6 +205,21 @@ class MainActivity : AppCompatActivity(), OnScanIntentListener {
         clearMeasurements()
     }
 
+    override fun onFinished() {
+        runOnUiThread {
+            Toast.makeText(this, getString(R.string.success_writing_message), Toast.LENGTH_LONG)
+                .show()
+            clearEverything()
+        }
+    }
+
+    override fun onFailed(errorMessage: String) {
+        runOnUiThread {
+            Toast.makeText(this, getString(R.string.error_writing_message), Toast.LENGTH_LONG)
+                .show()
+        }
+    }
+
     private fun prepareUI() {
         binding.getDimensionsButton.setOnClickListener {
             startDimensioning()
@@ -220,7 +236,17 @@ class MainActivity : AppCompatActivity(), OnScanIntentListener {
                     binding.parcelWeightInputLayout
                 )
             ) {
-                //TODO CSV Save Logic
+                CSVUtil.writeNewParcelInformation(
+                    binding.parcelIdInput.text.toString(),
+                    binding.parcelDateInput.text.toString(),
+                    binding.parcelTimeInput.text.toString(),
+                    binding.parcelLengthInput.text.toString(),
+                    binding.parcelWidthInput.text.toString(),
+                    binding.parcelHeightInput.text.toString(),
+                    binding.parcelWeightInput.text.toString(),
+                    binding.parcelNotesInput.text.toString(),
+                    this
+                )
             }
         }
 
@@ -251,16 +277,22 @@ class MainActivity : AppCompatActivity(), OnScanIntentListener {
     }
 
     private fun clearMeasurements() {
-        binding.parcelWidthInputLayout.applyStrokeAndHintColor(originalStrokeColorStateList)
-        binding.parcelWidthInput.setText("")
+        clearFields(
+            binding.parcelWidthInputLayout,
+            binding.parcelLengthInputLayout,
+            binding.parcelHeightInputLayout,
+            binding.parcelWeightInputLayout
+        )
+    }
 
-        binding.parcelLengthInputLayout.applyStrokeAndHintColor(originalStrokeColorStateList)
-        binding.parcelLengthInput.setText("")
-
-        binding.parcelHeightInputLayout.applyStrokeAndHintColor(originalStrokeColorStateList)
-        binding.parcelHeightInput.setText("")
-
-        binding.parcelWeightInput.setText("")
+    private fun clearEverything() {
+        clearFields(
+            binding.parcelIdInputLayout,
+            binding.parcelDateInputLayout,
+            binding.parcelTimeInputLayout,
+            binding.parcelNotesInputLayout
+        )
+        clearMeasurements()
     }
 
     private fun startDimensioning() {
@@ -331,6 +363,14 @@ class MainActivity : AppCompatActivity(), OnScanIntentListener {
     private fun TextInputLayout.applyStrokeAndHintColor(colorStateList: ColorStateList) {
         setBoxStrokeColorStateList(colorStateList)
         hintTextColor = colorStateList
+    }
+
+    private fun clearFields(vararg fields: TextInputLayout) {
+        fields.forEach {
+            it.editText?.setText("")
+            it.error = null
+            it.applyStrokeAndHintColor(originalStrokeColorStateList)
+        }
     }
 
     companion object {

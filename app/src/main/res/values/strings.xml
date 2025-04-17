@@ -25,4 +25,6 @@
     <string name="confirm_button_title">Confirm</string>
 
     <string name="error_validation_message">Please fill up all the required information</string>
+    <string name="success_writing_message">Parcel information successfully saved!</string>
+    <string name="error_writing_message">Error while saving parcel information, check logs!</string>
 </resources>
