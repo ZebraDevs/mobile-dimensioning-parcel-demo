@@ -1,5 +1,6 @@
 package com.nilac.zebra.mobiledimensioningparceldemo.ui
 
+import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
@@ -15,9 +16,12 @@ import android.text.style.TextAppearanceSpan
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.viewModels
+import androidx.annotation.ColorRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
+import com.google.android.material.color.MaterialColors
+import com.google.android.material.textfield.TextInputLayout
 import com.nilac.zebra.mobiledimensioningparceldemo.AppConstants
 import com.nilac.zebra.mobiledimensioningparceldemo.R
 import com.nilac.zebra.mobiledimensioningparceldemo.databinding.ActivityMainBinding
@@ -144,43 +148,43 @@ class MainActivity : AppCompatActivity(), OnScanIntentListener {
                 )
 
                 //Fill UI
-                val lengthBoxStrokeColor = getColorStateList(
-                    when (lengthStatus) {
-                        AppConstants.DIMENSIONING_SIZE_BELOW_RANGE -> R.color.dimensioning_input_field_stoke_color_orange
-                        AppConstants.DIMENSIONING_SIZE_ABOVE_RANGE -> R.color.dimensioning_input_field_stoke_color_red
-                        else -> R.color.dimensioning_input_field_stoke_color_green
-                    }
-                )
-                binding.parcelLengthInputLayout.apply {
-                    setBoxStrokeColorStateList(lengthBoxStrokeColor)
-                    hintTextColor = lengthBoxStrokeColor
+                val lengthBoxStrokeColor = when (lengthStatus) {
+                    AppConstants.DIMENSIONING_SIZE_BELOW_RANGE -> R.color.dimensioning_input_field_stoke_color_orange
+                    AppConstants.DIMENSIONING_SIZE_ABOVE_RANGE -> R.color.dimensioning_input_field_stoke_color_red
+                    else -> R.color.dimensioning_input_field_stoke_color_green
                 }
+                binding.parcelLengthInputLayout.applyStrokeAndHintColor(
+                    ContextCompat.getColorStateList(
+                        this,
+                        lengthBoxStrokeColor
+                    )!!
+                )
                 binding.parcelLengthInput.setText(length.toString())
 
-                val widthBoxStrokeColor = getColorStateList(
-                    when (widthStatus) {
-                        AppConstants.DIMENSIONING_SIZE_BELOW_RANGE -> R.color.dimensioning_input_field_stoke_color_orange
-                        AppConstants.DIMENSIONING_SIZE_ABOVE_RANGE -> R.color.dimensioning_input_field_stoke_color_red
-                        else -> R.color.dimensioning_input_field_stoke_color_green
-                    }
-                )
-                binding.parcelWidthInputLayout.apply {
-                    setBoxStrokeColorStateList(widthBoxStrokeColor)
-                    hintTextColor = widthBoxStrokeColor
+                val widthBoxStrokeColor = when (widthStatus) {
+                    AppConstants.DIMENSIONING_SIZE_BELOW_RANGE -> R.color.dimensioning_input_field_stoke_color_orange
+                    AppConstants.DIMENSIONING_SIZE_ABOVE_RANGE -> R.color.dimensioning_input_field_stoke_color_red
+                    else -> R.color.dimensioning_input_field_stoke_color_green
                 }
+                binding.parcelWidthInputLayout.applyStrokeAndHintColor(
+                    ContextCompat.getColorStateList(
+                        this,
+                        widthBoxStrokeColor
+                    )!!
+                )
                 binding.parcelWidthInput.setText(width.toString())
 
-                val heightBoxStrokeColor = getColorStateList(
-                    when (heightStatus) {
-                        AppConstants.DIMENSIONING_SIZE_BELOW_RANGE -> R.color.dimensioning_input_field_stoke_color_orange
-                        AppConstants.DIMENSIONING_SIZE_ABOVE_RANGE -> R.color.dimensioning_input_field_stoke_color_red
-                        else -> R.color.dimensioning_input_field_stoke_color_green
-                    }
-                )
-                binding.parcelHeightInputLayout.apply {
-                    setBoxStrokeColorStateList(heightBoxStrokeColor)
-                    hintTextColor = heightBoxStrokeColor
+                val heightBoxStrokeColor = when (heightStatus) {
+                    AppConstants.DIMENSIONING_SIZE_BELOW_RANGE -> R.color.dimensioning_input_field_stoke_color_orange
+                    AppConstants.DIMENSIONING_SIZE_ABOVE_RANGE -> R.color.dimensioning_input_field_stoke_color_red
+                    else -> R.color.dimensioning_input_field_stoke_color_green
                 }
+                binding.parcelHeightInputLayout.applyStrokeAndHintColor(
+                    ContextCompat.getColorStateList(
+                        this,
+                        heightBoxStrokeColor
+                    )!!
+                )
                 binding.parcelHeightInput.setText(height.toString())
             }
         }
@@ -205,16 +209,37 @@ class MainActivity : AppCompatActivity(), OnScanIntentListener {
             startDimensioning()
         }
 
+        binding.confirmButton.setOnClickListener {
+            if (validateFields(
+                    binding.parcelIdInputLayout,
+                    binding.parcelDateInputLayout,
+                    binding.parcelTimeInputLayout,
+                    binding.parcelLengthInputLayout,
+                    binding.parcelWidthInputLayout,
+                    binding.parcelHeightInputLayout,
+                    binding.parcelWeightInputLayout
+                )
+            ) {
+                //TODO CSV Save Logic
+            }
+        }
+
+        val defaultColor = MaterialColors.getColor(
+            this,
+            com.google.android.material.R.attr.colorControlNormal,
+            Color.LTGRAY
+        )
+
         originalStrokeColorStateList = ColorStateList(
             arrayOf(
-                intArrayOf(android.R.attr.state_focused),
+                intArrayOf(android.R.attr.state_enabled, android.R.attr.state_focused),
                 intArrayOf(android.R.attr.state_enabled),
-                intArrayOf()
+                intArrayOf(-android.R.attr.state_enabled)
             ),
             intArrayOf(
-                Color.GRAY,
-                Color.GRAY,
-                Color.GRAY
+                defaultColor,
+                defaultColor,
+                defaultColor
             )
         )
 
@@ -226,22 +251,13 @@ class MainActivity : AppCompatActivity(), OnScanIntentListener {
     }
 
     private fun clearMeasurements() {
-        binding.parcelWidthInputLayout.apply {
-            setBoxStrokeColorStateList(originalStrokeColorStateList)
-            hintTextColor = originalStrokeColorStateList
-        }
+        binding.parcelWidthInputLayout.applyStrokeAndHintColor(originalStrokeColorStateList)
         binding.parcelWidthInput.setText("")
 
-        binding.parcelLengthInputLayout.apply {
-            setBoxStrokeColorStateList(originalStrokeColorStateList)
-            hintTextColor = originalStrokeColorStateList
-        }
+        binding.parcelLengthInputLayout.applyStrokeAndHintColor(originalStrokeColorStateList)
         binding.parcelLengthInput.setText("")
 
-        binding.parcelHeightInputLayout.apply {
-            setBoxStrokeColorStateList(originalStrokeColorStateList)
-            hintTextColor = originalStrokeColorStateList
-        }
+        binding.parcelHeightInputLayout.applyStrokeAndHintColor(originalStrokeColorStateList)
         binding.parcelHeightInput.setText("")
 
         binding.parcelWeightInput.setText("")
@@ -292,6 +308,29 @@ class MainActivity : AppCompatActivity(), OnScanIntentListener {
         }
 
         sendBroadcast(dimensionServiceIntent)
+    }
+
+    private fun validateFields(vararg fields: TextInputLayout): Boolean {
+        var allValid = true
+
+        for (field in fields) {
+            val text = field.editText?.text?.toString()?.trim()
+            if (text.isNullOrEmpty()) {
+                allValid = false
+                Toast.makeText(
+                    this,
+                    getString(R.string.error_validation_message),
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+
+        return allValid
+    }
+
+    private fun TextInputLayout.applyStrokeAndHintColor(colorStateList: ColorStateList) {
+        setBoxStrokeColorStateList(colorStateList)
+        hintTextColor = colorStateList
     }
 
     companion object {
