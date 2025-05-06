@@ -1,14 +1,16 @@
 package com.nilac.zebra.mobiledimensioningparceldemo.utils
 
-import android.app.PendingIntent
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.PackageManager.ApplicationInfoFlags
 import android.content.pm.PackageManager.GET_META_DATA
 import android.content.pm.PackageManager.NameNotFoundException
+import android.graphics.Bitmap
 import android.os.Build
 import com.nilac.zebra.mobiledimensioningparceldemo.AppConstants
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.io.File
 
 object DimensioningUtils {
 
@@ -25,4 +27,17 @@ object DimensioningUtils {
         }
         return appInfo != null
     }
+
+    suspend fun saveBitMapImageToFile(bitmap: Bitmap, fileName: String): Boolean =
+        withContext(Dispatchers.IO) {
+            val dir = File(AppConstants.PARCELS_FOLDER_PATH)
+            if (!dir.exists()) dir.mkdirs()
+
+            val file = File(dir, "$fileName.png")
+            runCatching {
+                file.outputStream().use { out ->
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+                }
+            }.isSuccess
+        }
 }

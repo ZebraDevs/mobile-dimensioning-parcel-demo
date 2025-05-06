@@ -188,13 +188,29 @@
                 android:layout_width="match_parent"
                 android:layout_gravity="center"
                 android:layout_marginTop="@dimen/def_quad_margin"
-                android:gravity="center"
                 android:clickable="true"
+                android:gravity="center"
                 android:text="@string/get_dimensions_button_title"
                 app:icon="@drawable/ic_dimen_scan_generic"
                 app:iconPadding="-10dp"
                 app:iconSize="24dp"
                 app:iconTint="@color/primary_color" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/save_image"
+                style="@style/Theme.Base.ButtonOutlined"
+                android:layout_width="match_parent"
+                android:layout_gravity="center"
+                android:layout_marginTop="@dimen/def_quad_margin"
+                android:clickable="true"
+                android:gravity="center"
+                android:text="@string/save_image_button_title"
+                android:textColor="@color/accent_color"
+                app:icon="@drawable/ic_dimen_scan_generic"
+                app:iconPadding="-10dp"
+                app:iconSize="24dp"
+                app:iconTint="@color/accent_color"
+                app:strokeColor="@color/accent_color" />
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/parcel_notes_input_layout"

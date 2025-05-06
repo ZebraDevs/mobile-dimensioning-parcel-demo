@@ -1,39 +1,31 @@
 package com.nilac.zebra.mobiledimensioningparceldemo.ui
 
-import android.annotation.SuppressLint
 import android.app.PendingIntent
-import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
+import android.graphics.Bitmap
 import android.graphics.Color
-import android.graphics.Typeface
-import android.os.Build
 import android.os.Bundle
 import android.os.Environment
-import android.text.Spannable
-import android.text.SpannableString
-import android.text.style.TextAppearanceSpan
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.viewModels
-import androidx.annotation.ColorRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.color.MaterialColors
 import com.google.android.material.textfield.TextInputLayout
 import com.nilac.zebra.mobiledimensioningparceldemo.AppConstants
 import com.nilac.zebra.mobiledimensioningparceldemo.R
 import com.nilac.zebra.mobiledimensioningparceldemo.databinding.ActivityMainBinding
-import com.nilac.zebra.mobiledimensioningparceldemo.models.Event
 import com.nilac.zebra.mobiledimensioningparceldemo.utils.CSVUtil
 import com.nilac.zebra.mobiledimensioningparceldemo.utils.DWUtil
 import com.nilac.zebra.mobiledimensioningparceldemo.utils.DimensioningUtils
 import com.zebra.nilac.dwconfigurator.Constants
 import com.zebra.nilac.dwconfigurator.DataWedgeWrapper
 import com.zebra.nilac.dwconfigurator.interfaces.OnScanIntentListener
+import kotlinx.coroutines.launch
 import java.math.BigDecimal
-import java.time.Instant
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -46,6 +38,8 @@ class MainActivity : AppCompatActivity(), OnScanIntentListener, CSVUtil.WritingS
     private val mainViewModel: MainViewModel by viewModels()
 
     private lateinit var originalStrokeColorStateList: ColorStateList
+
+    private var mLastCapturedImage: Bitmap? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -113,12 +107,10 @@ class MainActivity : AppCompatActivity(), OnScanIntentListener, CSVUtil.WritingS
                 "onActivityResult: $actionName, $dimResultCode, $dimResultMessage"
             )
 
-            if (dimResultCode == 1 || dimResultCode == 2) {
-                Toast.makeText(this, "Error!\n$dimResultMessage", Toast.LENGTH_LONG).show()
-                return
-            }
-
-            if (actionName == AppConstants.INTENT_ACTION_GET_DIMENSION && dimResultCode == 0) {
+            if (actionName == AppConstants.INTENT_ACTION_ENABLE_DIMENSION && dimResultCode == 0) {
+                //Enable Image Export
+                enableImageOutputForDimensioning()
+            } else if (actionName == AppConstants.INTENT_ACTION_GET_DIMENSION) {
                 val length =
                     intent.getSerializableExtra(AppConstants.DIMENSIONING_PARAMS_LENGTH)!! as BigDecimal
                 val lengthStatus =
@@ -133,6 +125,10 @@ class MainActivity : AppCompatActivity(), OnScanIntentListener, CSVUtil.WritingS
                     intent.getSerializableExtra(AppConstants.DIMENSIONING_PARAMS_HEIGHT) as BigDecimal
                 val heightStatus: String =
                     intent.getStringExtra(AppConstants.DIMENSIONING_PARAMS_HEIGHT_STATUS)!!
+
+                //Grab Image Info
+                mLastCapturedImage =
+                    intent.getParcelableExtra(AppConstants.DIMENSIONING_PARAMS_IMAGE)
 
                 if (heightStatus == AppConstants.DIMENSIONING_SIZE_NO_DIM || lengthStatus == AppConstants.DIMENSIONING_SIZE_NO_DIM || widthStatus == AppConstants.DIMENSIONING_SIZE_NO_DIM) {
                     Toast.makeText(
@@ -187,6 +183,9 @@ class MainActivity : AppCompatActivity(), OnScanIntentListener, CSVUtil.WritingS
                     )!!
                 )
                 binding.parcelHeightInput.setText(height.toString())
+
+            } else if (dimResultCode != 0) {
+                Toast.makeText(this, "Error!\n$dimResultMessage", Toast.LENGTH_LONG).show()
             }
         }
     }
@@ -223,6 +222,37 @@ class MainActivity : AppCompatActivity(), OnScanIntentListener, CSVUtil.WritingS
     private fun prepareUI() {
         binding.getDimensionsButton.setOnClickListener {
             startDimensioning()
+        }
+
+        binding.saveImage.setOnClickListener {
+            if (mLastCapturedImage == null) {
+                Toast.makeText(
+                    this,
+                    getString(R.string.dimensioning_save_captured_image_null),
+                    Toast.LENGTH_LONG
+                ).show()
+                return@setOnClickListener
+            }
+
+            lifecycleScope.launch {
+                val operation = DimensioningUtils.saveBitMapImageToFile(
+                    mLastCapturedImage!!,
+                    "${binding.parcelIdInput.text}_${binding.parcelDateInput.text}_${
+                        binding.parcelTimeInput.text!!.replace(
+                            Regex(":"),
+                            ""
+                        )
+                    }"
+                )
+
+                Toast.makeText(
+                    this@MainActivity,
+                    if (operation) getString(R.string.dimensioning_save_captured_image_success) else getString(
+                        R.string.dimensioning_save_captured_image_failed
+                    ),
+                    Toast.LENGTH_LONG
+                ).show()
+            }
         }
 
         binding.confirmButton.setOnClickListener {
@@ -283,6 +313,7 @@ class MainActivity : AppCompatActivity(), OnScanIntentListener, CSVUtil.WritingS
             binding.parcelHeightInputLayout,
             binding.parcelWeightInputLayout
         )
+        mLastCapturedImage = null
     }
 
     private fun clearEverything() {
@@ -321,13 +352,23 @@ class MainActivity : AppCompatActivity(), OnScanIntentListener, CSVUtil.WritingS
         sendDimensioningBroadcast(AppConstants.INTENT_ACTION_DISABLE_DIMENSION)
     }
 
+    private fun enableImageOutputForDimensioning() {
+        Log.i(TAG, "Enabling image output for dimensioning captures")
+        sendDimensioningBroadcast(
+            AppConstants.INTENT_ACTION_SET_DIMENSION_PARAMETER,
+            Bundle().apply {
+                putBoolean(AppConstants.DIMENSIONING_REPORT_IMAGE, true)
+            })
+    }
 
-    private fun sendDimensioningBroadcast(broadcastAction: String) {
+    private fun sendDimensioningBroadcast(broadcastAction: String, extras: Bundle? = null) {
         val dimensionServiceIntent = Intent().apply {
             action = broadcastAction
             setPackage(AppConstants.ZEBRA_DIMENSIONING_PACKAGE)
             putExtra(AppConstants.APPLICATION_PACKAGE, packageName)
-            putExtra(AppConstants.MODULE, AppConstants.PARCEL_MODULE)
+            if (extras != null) {
+                putExtras(extras)
+            }
         }
 
         val lobPendingIntent =
@@ -335,6 +376,8 @@ class MainActivity : AppCompatActivity(), OnScanIntentListener, CSVUtil.WritingS
         dimensionServiceIntent.putExtra("CALLBACK_RESPONSE", lobPendingIntent)
 
         if (broadcastAction == AppConstants.INTENT_ACTION_ENABLE_DIMENSION) {
+            dimensionServiceIntent.putExtra(AppConstants.MODULE, AppConstants.PARCEL_MODULE)
+
             startForegroundService(dimensionServiceIntent)
             return
         }

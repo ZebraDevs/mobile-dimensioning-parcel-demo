@@ -22,9 +22,14 @@
     <string name="parcel_notes_hint">Notes</string>
 
     <string name="get_dimensions_button_title">Get Dimensions</string>
+    <string name="save_image_button_title">Save Captured Image</string>
     <string name="confirm_button_title">Confirm</string>
 
     <string name="error_validation_message">Please fill up all the required information</string>
     <string name="success_writing_message">Parcel information successfully saved!</string>
     <string name="error_writing_message">Error while saving parcel information, check logs!</string>
+
+    <string name="dimensioning_save_captured_image_null">No captured image to save</string>
+    <string name="dimensioning_save_captured_image_success">Image successfully saved here: %s</string>
+    <string name="dimensioning_save_captured_image_failed">Failed to save the captured image</string>
 </resources>

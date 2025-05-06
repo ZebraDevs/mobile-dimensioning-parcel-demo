@@ -13,7 +13,8 @@ object AppConstants {
     private const val FOLDER_NAME = "md-dimensioning-demo"
 
     const val PARCELS_FILE_NAME = "parcels_list.csv"
-    val PARCELS_FOLDER_PATH = Environment.getExternalStorageDirectory().absolutePath + "/$FOLDER_NAME"
+    val PARCELS_FOLDER_PATH =
+        Environment.getExternalStorageDirectory().absolutePath + "/$FOLDER_NAME"
 
     const val APPLICATION_PACKAGE = "APPLICATION_PACKAGE"
 
@@ -29,7 +30,11 @@ object AppConstants {
     const val DIMENSIONING_PARAMS_HEIGHT = "HEIGHT"
     const val DIMENSIONING_PARAMS_HEIGHT_STATUS = "HEIGHT_STATUS"
 
+    const val DIMENSIONING_PARAMS_IMAGE = "IMAGE"
+
     const val DIMENSIONING_TIMESTAMP = "TIMESTAMP"
+
+    const val DIMENSIONING_REPORT_IMAGE = "REPORT_IMAGE"
 
     const val DIMENSIONING_SIZE_BELOW_RANGE = "BelowRange"
     const val DIMENSIONING_SIZE_IN_RANGE = "InRange"
@@ -39,6 +44,8 @@ object AppConstants {
     const val INTENT_ACTION_ENABLE_DIMENSION = "com.zebra.dimensioning.ENABLE_DIMENSION"
     const val INTENT_ACTION_DISABLE_DIMENSION = "com.zebra.dimensioning.DISABLE_DIMENSION"
     const val INTENT_ACTION_GET_DIMENSION = "com.zebra.parceldimensioning.GET_DIMENSION"
+    const val INTENT_ACTION_SET_DIMENSION_PARAMETER =
+        "com.zebra.parceldimensioning.SET_DIMENSION_PARAMETER"
 
     const val RESULT_MESSAGE = "RESULT_MESSAGE"
     const val RESULT_CODE = "RESULT_CODE"
