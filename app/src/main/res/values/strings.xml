@@ -30,6 +30,6 @@
     <string name="error_writing_message">Error while saving parcel information, check logs!</string>
 
     <string name="dimensioning_save_captured_image_null">No captured image to save</string>
-    <string name="dimensioning_save_captured_image_success">Image successfully saved here: %s</string>
+    <string name="dimensioning_save_captured_image_success">Image successfully saved</string>
     <string name="dimensioning_save_captured_image_failed">Failed to save the captured image</string>
 </resources>
