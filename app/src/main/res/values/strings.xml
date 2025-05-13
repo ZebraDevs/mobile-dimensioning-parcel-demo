@@ -5,6 +5,7 @@
     <string name="parcel_retrieved_measurements_title">Measurements</string>
 
     <string name="parcel_id_title">ID</string>
+    <string name="parcel_id_subtitle">Scan Barcode</string>
 
     <string name="dimensioning_date_hint">Date</string>
     <string name="dimensioning_time_hint">Time</string>

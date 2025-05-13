@@ -194,6 +194,7 @@ class MainActivity : AppCompatActivity(), OnScanIntentListener, CSVUtil.WritingS
         Log.d(TAG, "Received a DataWedge scanner intent: $intent")
         val decodedBarcode = intent.getStringExtra(AppConstants.DW_DATA_STRING_TAG)!!
 
+        binding.parcelIdInputLayout.hint = getString(R.string.parcel_id_title)
         binding.parcelIdInput.setText(decodedBarcode)
 
         LocalDateTime.now().let {
@@ -410,6 +411,9 @@ class MainActivity : AppCompatActivity(), OnScanIntentListener, CSVUtil.WritingS
 
     private fun clearFields(vararg fields: TextInputLayout) {
         fields.forEach {
+            if (it.id == R.id.parcel_id_input_layout) {
+                it.hint = getString(R.string.parcel_id_subtitle)
+            }
             it.editText?.setText("")
             it.error = null
             it.applyStrokeAndHintColor(originalStrokeColorStateList)
